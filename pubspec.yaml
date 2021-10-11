@@ -1,6 +1,6 @@
 name: quds_mysql
-description: A starting point for Dart libraries or applications.
-version: 1.0.0
+description: An expansion package that simplifies creating databases and tables, crud operations, queries with modelization using mysql1
+version: 1.0.0+1
 homepage: https://github.com/MohammedAsaadAsaad/quds_mysql
 
 environment:
