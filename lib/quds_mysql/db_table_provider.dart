@@ -70,7 +70,7 @@ abstract class DbRepository<T extends DbModel> {
     var foundColumns = <String, String>{};
     for (var m in tableInfo) {
       var v = m.values!.toList();
-      foundColumns[v[1].toString().toLowerCase()] = '${v[2]}';
+      foundColumns[v[0].toString().toLowerCase()] = '${v[1]}';
     }
 
     T tempEntry = _createInstance();

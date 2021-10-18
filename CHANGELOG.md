@@ -3,3 +3,6 @@
 
 ## 1.0.0+1
 - Updated the description.
+
+## 1.0.0+2
+- Updated README.md.

@@ -20,7 +20,8 @@ class DbHelper {
     'BIGINT': [int, Int64],
     // 'INTEGER ': [Uint16, Uint32, Uint64, Uint8],
 
-    'TEXT': [String, Map, List, Object],
+    'TEXT': [String],
+    'JSON': [Map, List, Object],
     'BOOLEAN': [
       bool,
     ],
