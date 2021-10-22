@@ -17,7 +17,7 @@ class NumField<T> extends FieldWithValue<T> {
             l1: precision,
             l2: scale,
             notNull: notNull,
-            isUnique: notNull,
+            isUnique: isUnique,
             jsonMapName: jsonMapName,
             jsonMapType: jsonMapType);
 
