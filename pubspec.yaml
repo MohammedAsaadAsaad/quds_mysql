@@ -1,6 +1,6 @@
 name: quds_mysql
 description: An expansion package that simplifies creating databases and tables, crud operations, queries with modelization using mysql1
-version: 1.0.0+2
+version: 1.0.0+3
 homepage: https://github.com/MohammedAsaadAsaad/quds_mysql
 
 environment:
