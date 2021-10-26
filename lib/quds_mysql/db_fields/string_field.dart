@@ -142,8 +142,8 @@ class StringField extends FieldWithValue<String> {
   /// Get the position of this field in [text]
   IntField locateIn(String text) {
     var result = IntField();
-    result.queryBuilder = () => 'LOCATE(?,${buildQuery()})';
-    result.parametersBuilder = () => [text, ...getParameters()];
+    result.queryBuilder = () => 'LOCATE(${buildQuery()},?)';
+    result.parametersBuilder = () => [...getParameters(), text];
     return result;
   }
 
