@@ -134,6 +134,19 @@ class StringField extends FieldWithValue<String> {
         before: this, after: '%$text%', operatorString: 'LIKE');
   }
 
+  /// Get sql statement to check this value if contained in [text].
+  ConditionQuery containedIn(String text) {
+    return locateIn(text).moreThan(0);
+  }
+
+  /// Get the position of this field in [text]
+  IntField locateIn(String text) {
+    var result = IntField();
+    result.queryBuilder = () => 'LOCATE(?,${buildQuery()})';
+    result.parametersBuilder = () => [text, ...getParameters()];
+    return result;
+  }
+
   /// Get sql statement to check this value if ends with [text].
   ConditionQuery endsWith(String text) {
     return ConditionQuery(
