@@ -260,7 +260,9 @@ abstract class DbRepository<T extends DbModel> {
       FieldWithValue? f = fields.firstWhere(
           (element) => element?.columnName == e.key,
           orElse: () => null);
-      if (f != null) f.dbValue = e.value;
+      if (f != null) {
+        f.setValue(e.value);
+      }
     }
     return e;
   }
@@ -626,7 +628,7 @@ abstract class DbRepository<T extends DbModel> {
 
     if (result != null) {
       if (result is List) {
-        if (result.isNotEmpty) if (result[0] != null) return result[0].row[0];
+        if (result.isNotEmpty) if (result[0] != null) return result[0].first;
       }
     }
     return null;

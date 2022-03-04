@@ -31,8 +31,13 @@ class FieldWithValue<T> extends QueryPart<T> {
   Object? get dbValue => DbHelper.getDbValue(value);
 
   /// Set the field value in db storable tyle.
-  set dbValue(Object? dbValue) =>
-      value = DbHelper.getValueFromDbValue(T, dbValue);
+  set dbValue(Object? dbValue) {
+    value = DbHelper.getValueFromDbValue(T, dbValue);
+  }
+
+  void setValue(Object? v) {
+    value = DbHelper.getValueFromDbValue(T, v);
+  }
 
   /// Create an instance of [FieldWithValue]
   FieldWithValue(this.columnName,
