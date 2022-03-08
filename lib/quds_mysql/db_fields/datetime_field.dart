@@ -168,7 +168,7 @@ class DateTimeField extends FieldWithValue<DateTime> {
   }
 
   @override
-  get dbValue => value?.toString();
+  get dbValue => value?.toUtc();
 
   @override
   set dbValue(dynamic v) {
