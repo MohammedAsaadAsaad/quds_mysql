@@ -136,7 +136,7 @@ class DateTimeField extends FieldWithValue<DateTime> {
   IntField get month => _componentAsInteger('MONTH');
 
   /// Get [IntField] with value of this field year component.
-  IntField get year => _componentAsInteger('Y');
+  IntField get year => _componentAsInteger('YEAR');
 
   IntField _componentAsInteger(String functionName) {
     var result = IntField();
