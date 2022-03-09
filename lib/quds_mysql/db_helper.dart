@@ -68,11 +68,12 @@ class DbHelper {
 
     if (!_donationDisplayed) {
       _donationDisplayed = true;
-      log('_______________Quds MySql________________');
-      log('Hi great developer!');
-      log('Would you donate to Quds MySql developers team?\nIt will be great help to our team to continue the developement!');
-      log('_____________Donation Link____________');
-      log('https://www.paypal.com/donate?hosted_button_id=94Y2Q9LQR9XHS');
+      log('Quds mySql Initialized!');
+      // log('_______________Quds MySql________________');
+      // log('Hi great developer!');
+      // log('Would you donate to Quds MySql developers team?\nIt will be great help to our team to continue the developement!');
+      // log('_____________Donation Link____________');
+      // log('https://www.paypal.com/donate?hosted_button_id=94Y2Q9LQR9XHS');
     }
   }
 

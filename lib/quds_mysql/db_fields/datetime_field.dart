@@ -130,34 +130,17 @@ class DateTimeField extends FieldWithValue<DateTime> {
   /// Get [IntField] with value of this field day component.
   ///
   /// In another words `day of month`
-  IntField get day => _componentAsInteger('d');
-
-  /// Get [StringField] with day part as string.
-  StringField get dayAsString => _componentAsString('d');
+  IntField get day => _componentAsInteger('DAY');
 
   /// Get [IntField] with value of this field month component.
-  IntField get month => _componentAsInteger('m');
-
-  /// Get [StringField] with month part as string.
-  StringField get monthAsString => _componentAsString('m');
+  IntField get month => _componentAsInteger('MONTH');
 
   /// Get [IntField] with value of this field year component.
   IntField get year => _componentAsInteger('Y');
 
-  /// Get [StringField] with year part as string.
-  StringField get yearAsString => _componentAsString('Y');
-
-  IntField _componentAsInteger(String format) {
+  IntField _componentAsInteger(String functionName) {
     var result = IntField();
-    result.queryBuilder =
-        () => "CAST(STRFTIME('%$format', ${buildQuery()}) AS INTEGER)";
-    result.parametersBuilder = () => [...getParameters()];
-    return result;
-  }
-
-  StringField _componentAsString(String format) {
-    var result = StringField();
-    result.queryBuilder = () => "STRFTIME('%$format', ${buildQuery()})";
+    result.queryBuilder = () => "$functionName(${buildQuery()})";
     result.parametersBuilder = () => [...getParameters()];
     return result;
   }
