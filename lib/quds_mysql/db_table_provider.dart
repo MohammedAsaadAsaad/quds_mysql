@@ -576,10 +576,25 @@ abstract class DbRepository<T extends DbModel> {
     if (limit != null) queryString += ' LIMIT $limit';
     if (offset != null) queryString += ' OFFSET $offset';
     var con = await _initializeConnection();
-    var results = await con.query(queryString, queryArgs);
+    try {
+      var results = await con.query(queryString, queryArgs);
 
-    var r = results.toList();
-    return r;
+      var r = results.toList();
+      return r;
+    } catch (e) {
+      _connection = await DbHelper._checkDbAndTable(this, forceReconnect: true);
+      return await _query<O>(
+        queries: queries,
+        otherJoinTable: otherJoinTable,
+        joinCondition: joinCondition,
+        joinType: joinType,
+        where: where,
+        having: having,
+        offset: offset,
+        groupBy: groupBy,
+        orderBy: orderBy,
+      );
+    }
   }
 
   /// Delete entries from this table,

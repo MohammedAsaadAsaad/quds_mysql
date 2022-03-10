@@ -78,8 +78,8 @@ class DbHelper {
   }
 
   /// Check [DbRepository] 's table in the db and create or modify as required.
-  static Future<mysql.MySqlConnection> _checkDbAndTable(
-      DbRepository dbProvider) async {
+  static Future<mysql.MySqlConnection> _checkDbAndTable(DbRepository dbProvider,
+      {bool forceReconnect = false}) async {
     await _initializeDb();
     var map = _connections;
 
@@ -89,7 +89,15 @@ class DbHelper {
             : dbProvider._specialDb!;
     String mapKey = dbName + '.' + dbProvider.tableName;
 
-    if (map[mapKey] != null) return map[mapKey]!;
+    if (map[mapKey] != null) {
+      if (!forceReconnect) {
+        return map[mapKey]!;
+      } else {
+        try {
+          await map[mapKey]?.close();
+        } finally {}
+      }
+    }
 
     var connection = await mysql.MySqlConnection.connect(
         dbProvider.connectionSettings ??
