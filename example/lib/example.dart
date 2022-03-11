@@ -6,8 +6,8 @@ import 'data/notes_repository.dart';
 Future<void> runApp() async {
   my_db.DbHelper.mainDb = 'motors';
   my_db.DbHelper.dbUser = 'root';
-  my_db.DbHelper.dbPassword = '0';
-  my_db.DbHelper.port = 2020;
+  my_db.DbHelper.dbPassword;
+  my_db.DbHelper.port = 3306;
   // var notesManager = NotesRepository();
   // await notesManager.deleteAllEntries(withRelatedItems: false);
   // var notes = [
@@ -36,8 +36,11 @@ Future<void> runApp() async {
       .selectFirstWhere((model) => model.id.equals(1024));
   std?.isActive.value = 1;
   if (std != null) StudentsRepository().updateEntry(std);
-  var count = await StudentsRepository()
-      .countEntries(where: (s) => s.creationTime.month.equals(1));
+  var count = await StudentsRepository().countEntries(
+      where: (s) =>
+          (s.modificationTime > DateTime(2022, 3, 1, 10, 10, 10)) &
+          s.creationTime.month.equals(1));
+
   print(count);
 }
 

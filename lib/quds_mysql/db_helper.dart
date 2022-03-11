@@ -218,7 +218,7 @@ class DbHelper {
     }
 
     if (type == DateTime) {
-      return (value as DateTime?)?.millisecondsSinceEpoch;
+      return (value as DateTime?)?.toUtc();
     }
 
     if (value is Map) return json.encode(value);
