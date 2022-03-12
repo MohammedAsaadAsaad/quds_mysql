@@ -4,7 +4,7 @@ part of '../quds_mysql.dart';
 ///
 /// Every [DbModel] has by default some fields.
 ///
-/// `id`  - `creationTime` - `modificationTime`
+/// `id`  - `creationTime` - `modificationTime` - `deletedAt`
 abstract class DbModel {
   /// The Id column of this model.
   var id = IdField();
@@ -14,10 +14,19 @@ abstract class DbModel {
     columnName: 'created_at',
   );
 
+  DateTimeField get createdAt => creationTime;
+
   /// The modification time of this model, its value set automatically when created or modified in db.
   var modificationTime = DateTimeField(
     columnName: 'updated_at',
   );
+  DateTimeField get updatedAt => modificationTime;
+
+  /// The deletion time of this model, its value set automatically when created or modified in db.
+  var deletetionTime = DateTimeField(
+    columnName: 'deleted_at',
+  );
+  DateTimeField get deletedAt => deletetionTime;
 
   /// Create an instance of [DbModel].
   DbModel();
