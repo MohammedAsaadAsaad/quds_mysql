@@ -50,7 +50,7 @@ abstract class DbModel {
   /// Get a list of all fields of this model with pre-created fields.
   List<FieldWithValue?> getAllFields() {
     var list = getFields();
-    return [id, creationTime, modificationTime, ...?list];
+    return [id, creationTime, modificationTime, deletedAt, ...?list];
   }
 
   /// Copy values from [other] db model fields to this fields.

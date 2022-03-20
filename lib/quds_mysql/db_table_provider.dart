@@ -582,6 +582,7 @@ abstract class DbRepository<T extends DbModel> {
       var r = results.toList();
       return r;
     } catch (e) {
+      print(e);
       _connection = await DbHelper._checkDbAndTable(this, forceReconnect: true);
       return await _query<O>(
         queries: queries,
