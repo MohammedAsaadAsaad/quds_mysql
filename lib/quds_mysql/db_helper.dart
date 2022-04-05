@@ -100,8 +100,19 @@ class DbHelper {
     }
 
     var connection = await mysql.MySqlConnection.connect(
-        dbProvider.connectionSettings ??
-            mysql.ConnectionSettings(
+        dbProvider.connectionSettings ?? dbProvider._specialDb != null
+            ? mysql.ConnectionSettings(
+                host: host,
+                port: port,
+                user: dbUser,
+                password: dbPassword,
+                db: dbProvider._specialDb,
+                useCompression: useCompression,
+                useSSL: useSSL,
+                maxPacketSize: maxPacketSize,
+                timeout: timeout,
+                characterSet: characterSet)
+            : mysql.ConnectionSettings(
                 host: host,
                 port: port,
                 user: dbUser,
