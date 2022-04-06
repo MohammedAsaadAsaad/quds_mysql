@@ -206,7 +206,19 @@ class DbHelper {
     if (type == bool) return dbValue == null ? null : dbValue == 1;
 
     if (type == DateTime) {
-      return dbValue == null ? null : DateTime.parse(dbValue.toString());
+      dbValue = dbValue == null ? null : DateTime.parse(dbValue.toString());
+      if (dbValue == null) return null;
+      dbValue = dbValue as DateTime;
+      return DateTime.utc(
+        dbValue.year,
+        dbValue.month,
+        dbValue.day,
+        dbValue.hour,
+        dbValue.minute,
+        dbValue.second,
+        dbValue.millisecond,
+        dbValue.microsecond,
+      );
     }
 
     if (type == Map) {

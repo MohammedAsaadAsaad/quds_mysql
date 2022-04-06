@@ -1,7 +1,5 @@
-import 'package:example/data/note.dart';
 import 'package:quds_mysql/quds_mysql.dart' as my_db;
 import 'package:quds_mysql/quds_mysql.dart';
-import 'data/notes_repository.dart';
 
 Future<void> runApp() async {
   my_db.DbHelper.mainDb = 'motors';
