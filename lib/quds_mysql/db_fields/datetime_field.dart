@@ -218,7 +218,7 @@ class DateTimeField extends FieldWithValue<DateTime> {
   /// Get a [DateTimeField] with `now` db representation.
   static DateTimeField get now {
     var result = DateTimeField();
-    result.queryBuilder = () => "DATETIME('now')";
+    result.queryBuilder = () => "NOW()";
     result.parametersBuilder = () => [];
     return result;
   }

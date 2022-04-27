@@ -4,42 +4,26 @@ import 'package:quds_mysql/quds_mysql.dart';
 Future<void> runApp() async {
   my_db.DbHelper.mainDb = 'motors';
   my_db.DbHelper.dbUser = 'root';
-  my_db.DbHelper.dbPassword;
-  my_db.DbHelper.port = 3306;
-  // var notesManager = NotesRepository();
-  // await notesManager.deleteAllEntries(withRelatedItems: false);
-  // var notes = [
-  //   for (int i = 0; i < 1000; i++)
-  //     Note()
-  //       ..title.value = 'hi-$i'
-  //       ..isRead.value = i % 2 == 0
-  //       ..importance.value = 1
-  // ];
-  // await notesManager.insertCollection(notes);
-  // for (var n in notes) {
-  //   n
-  //     ..title.value = 'New title'
-  //     ..jsonArrayValues.value = [1, '2']
-  //     ..jsonMap.value = {'hi': 1, 'done': true};
-  // }
-  // await notesManager.updateCollectionById(notes);
+  my_db.DbHelper.dbPassword = '0';
+  my_db.DbHelper.port = 2020;
+  await Future.delayed(const Duration(seconds: 1));
+  DateTime start = DateTime.now();
+  var repo = StudentsRepository();
 
-  // var selectNotes = {
-  //   await notesManager.selectWhere((e) => e.importance.equals(1))
-  // };
+  for (int i = 0; i < 1000; i++) {
+    var std = await repo.selectFirstWhere((model) => model.id.equals(1024));
+    if (std != null) {
+      std.isActive.value = 1;
+      await repo.updateEntry(std);
+    }
 
-  // print(selectNotes.length);
+    await StudentsRepository().countEntries(
+        where: (s) =>
+            (s.modificationTime > DateTime(2022, 3, 1, 10, 10, 10)) &
+            s.creationTime.month.equals(1));
+  }
 
-  var std = await StudentsRepository()
-      .selectFirstWhere((model) => model.id.equals(1024));
-  std?.isActive.value = 1;
-  if (std != null) StudentsRepository().updateEntry(std);
-  var count = await StudentsRepository().countEntries(
-      where: (s) =>
-          (s.modificationTime > DateTime(2022, 3, 1, 10, 10, 10)) &
-          s.creationTime.month.equals(1));
-
-  print(count);
+  print(DateTime.now().difference(start).inMilliseconds.toString() + ' ms');
 }
 
 class Student extends DbModel {
