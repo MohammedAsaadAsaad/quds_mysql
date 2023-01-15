@@ -12,3 +12,6 @@
 
 ## 1.0.0+5
 - Added new methods (`locateIn` , `containedIn`) to `StringField` 
+
+## 1.0.1+1
+- Fixed Saving DateTime object in UTC

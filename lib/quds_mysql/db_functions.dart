@@ -33,7 +33,8 @@ class DbFunctions {
     for (var v in values) {
       result += (v is FieldWithValue ? v.buildQuery() : '?') + ',';
     }
-    if (result.endsWith(',')) result = result.substring(0, result.length - 1);
+    result = result.removeLastComma();
+
     return result;
   }
 

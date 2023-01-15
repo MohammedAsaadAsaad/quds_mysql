@@ -21,8 +21,9 @@ abstract class DbRepository<T extends DbModel> {
     tempEntry.getAllFields().forEach((e) {
       cS += e!.columnDefinition + ',';
     });
+
     //Remove last ','
-    cS = cS.substring(0, cS.length - 1);
+    cS = cS.removeLastComma();
 
     cS += ')';
     return cS;
@@ -509,7 +510,7 @@ abstract class DbRepository<T extends DbModel> {
         queryArgs.addAll(element.getParameters());
       }
 
-      queryString = queryString.substring(0, queryString.length - 1);
+      queryString = queryString.removeLastComma();
     }
     queryString = 'SELECT $queryString FROM $tableName';
 

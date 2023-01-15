@@ -19,6 +19,9 @@ part 'quds_mysql/db_model.dart';
 part 'quds_mysql/db_table_provider.dart';
 part 'quds_mysql/entry_change_type.dart';
 
+// Utilities;
+part 'quds_mysql/utilities/string_utilities.dart';
+
 //Query parts
 part 'quds_mysql/query_parts/query_part.dart';
 part 'quds_mysql/query_parts/condition.dart';

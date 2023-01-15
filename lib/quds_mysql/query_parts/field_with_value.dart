@@ -101,9 +101,8 @@ class FieldWithValue<T> extends QueryPart<T> {
       resultQuery += '?,';
     }
 
-    if (resultQuery.endsWith(',')) {
-      resultQuery = resultQuery.substring(0, resultQuery.length - 1);
-    }
+    resultQuery = resultQuery.removeLastComma();
+
     resultQuery += ')';
 
     result.queryBuilder = () => resultQuery;
