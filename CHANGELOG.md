@@ -15,3 +15,6 @@
 
 ## 1.0.1+1
 - Fixed Saving DateTime object in UTC
+
+## 1.0.1+2
+- Added ability to create/drop tables

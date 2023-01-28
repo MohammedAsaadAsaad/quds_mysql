@@ -42,6 +42,10 @@ Future<void> runApp() async {
   // }
 
   // print(DateTime.now().difference(start).inMilliseconds.toString() + ' ms');
+
+  // Drop the table
+  await repo.dropTable();
+  await repo.createTable();
 }
 
 class Student extends DbModel {

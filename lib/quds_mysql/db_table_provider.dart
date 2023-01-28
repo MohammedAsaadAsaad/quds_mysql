@@ -54,6 +54,9 @@ abstract class DbRepository<T extends DbModel> {
     }
   }
 
+  Future<bool> createTable() async =>
+      _checkAndCreateTableIfNotExist(await _initializeConnection());
+
   Future<bool> _checkAndCreateTableIfNotExist(mysql.MySqlConnection db) async {
     try {
       await db.query(_createStatement);
@@ -83,6 +86,12 @@ abstract class DbRepository<T extends DbModel> {
             'ADD ${f.columnDefinition}');
       }
     }
+    return true;
+  }
+
+  Future<bool> dropTable() async {
+    var con = await _initializeConnection();
+    await con.query('DROP TABLE $tableName;');
     return true;
   }
 
