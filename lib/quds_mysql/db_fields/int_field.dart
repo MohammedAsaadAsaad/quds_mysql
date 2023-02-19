@@ -123,7 +123,7 @@ class IntField extends NumField<int> {
   /// Get random db integer.
   static IntField get randomInteger {
     var result = IntField();
-    result.queryBuilder = () => 'RANDOM()';
+    result.queryBuilder = () => 'RAND()';
     return result;
   }
 }

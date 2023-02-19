@@ -192,7 +192,7 @@ class FieldWithValue<T> extends QueryPart<T> {
   /// ```
   FieldOrder get randomOrder {
     var result = FieldOrder();
-    result.queryBuilder = () => 'RANDOM()';
+    result.queryBuilder = () => 'RAND()';
     return result;
   }
 
