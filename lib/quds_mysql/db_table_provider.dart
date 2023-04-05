@@ -593,7 +593,11 @@ abstract class DbRepository<T extends DbModel> {
       return r;
     } catch (e) {
       if (e.toString() != 'Bad state: Cannot write to socket, it is closed') {
-        rethrow;
+        throw Exception({
+          'original_exception': e,
+          'query_text': queryString,
+          'query_args': queryArgs
+        });
       }
       await closeDB();
       _connection = await DbHelper._checkDbAndTable(this, forceReconnect: true);
