@@ -174,4 +174,90 @@ class StringField extends FieldWithValue<String> {
     result.parametersBuilder = () => getParameters();
     return result;
   }
+
+  /// Get a sql statement representation that check weather this value is more than [other].
+  ///
+  /// [other] may be of the following:
+  ///
+  ///  [StringField] - [String]
+  ConditionQuery moreThan(dynamic other) {
+    return ConditionQuery(operatorString: '>', before: this, after: other);
+  }
+
+  /// Get a sql statement representation that check weather this value is less than [other].
+  ///
+  /// [other] may be of the following:
+  ///
+  ///  [StringField] - [String]
+  ConditionQuery lessThan(dynamic other) {
+    return ConditionQuery(operatorString: '<', before: this, after: other);
+  }
+
+  /// Get a sql statement representation that check weather this value is between two values.
+  ///
+  /// [min],[max] may be of the following:
+  ///
+  ///  [StringField] - [String]
+  ConditionQuery between(min, max) {
+    DbFunctions.assertNumValues([min, max]);
+    var q = ConditionQuery();
+    String qString = '(${buildQuery()} BETWEEN ';
+    qString += (min is NumField) ? min.buildQuery() : '?';
+    qString += ' AND ';
+    qString += (max is NumField) ? max.buildQuery() : '?';
+    qString += ')';
+    q.queryBuilder = () => qString;
+    q.parametersBuilder = () => [
+          ...getParameters(),
+          if (min is StringField) ...min.getParameters() else min,
+          if (max is StringField) ...max.getParameters() else max
+        ];
+    return q;
+  }
+
+  /// Get a sql statement representation that check weather this value is more than or equal [other].
+  ///
+  /// [other] may be of the following:
+  ///
+  ///  [StringField] - [String]
+  ConditionQuery moreThanOrEquals(dynamic other) {
+    return ConditionQuery(operatorString: '>=', before: this, after: other);
+  }
+
+  /// Get a sql statement representation that check weather this value is less than or equal [other].
+  ///
+  /// [other] may be of the following:
+  ///
+  ///  [StringField] - [String]
+  ConditionQuery lessThanOrEquals(dynamic other) {
+    return ConditionQuery(operatorString: '<=', before: this, after: other);
+  }
+
+  /// Get a sql statement representation that check weather this value is more than [other].
+  ///
+  /// [other] may be of the following:
+  ///
+  ///  [StringField] - [String]
+  ConditionQuery operator >(dynamic other) => moreThan(other);
+
+  /// Get a sql statement representation that check weather this value is more than or equal [other].
+  ///
+  /// [other] may be of the following:
+  ///
+  ///  [StringField] - [String]
+  ConditionQuery operator >=(dynamic other) => moreThanOrEquals(other);
+
+  /// Get a sql statement representation that check weather this value is less than [other].
+  ///
+  /// [other] may be of the following:
+  ///
+  ///  [StringField] - [String]
+  ConditionQuery operator <(dynamic other) => lessThan(other);
+
+  /// Get a sql statement representation that check weather this value is less than or equal [other].
+  ///
+  /// [other] may be of the following:
+  ///
+  ///  [StringField] - [String]
+  ConditionQuery operator <=(dynamic other) => lessThanOrEquals(other);
 }
