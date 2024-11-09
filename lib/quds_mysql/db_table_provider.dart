@@ -33,10 +33,12 @@ abstract class DbRepository<T extends DbModel> {
   bool _databaseInitialized = false;
 
   /// Initialize the database, check this table, create an modify as required.
-  Future<mysql.MySqlConnection> _initializeConnection() async {
-    if (_databaseInitialized) return _connection;
+  Future<mysql.MySqlConnection> _initializeConnection(
+      {required bool isolatedConnection}) async {
+    if (_databaseInitialized && !isolatedConnection) return _connection;
 
-    _connection = await DbHelper._checkDbAndTable(this);
+    _connection =
+        await DbHelper._checkDbAndTable(this, isolatedConnection: false);
 
     _databaseInitialized = true;
     return _connection;
@@ -54,8 +56,8 @@ abstract class DbRepository<T extends DbModel> {
     }
   }
 
-  Future<bool> createTable() async =>
-      _checkAndCreateTableIfNotExist(await _initializeConnection());
+  Future<bool> createTable() async => _checkAndCreateTableIfNotExist(
+      await _initializeConnection(isolatedConnection: false));
 
   Future<bool> _checkAndCreateTableIfNotExist(mysql.MySqlConnection db) async {
     try {
@@ -90,7 +92,7 @@ abstract class DbRepository<T extends DbModel> {
   }
 
   Future<bool> dropTable() async {
-    var con = await _initializeConnection();
+    var con = await _initializeConnection(isolatedConnection: true);
     await con.query('DROP TABLE $tableName;');
     return true;
   }
@@ -113,12 +115,13 @@ abstract class DbRepository<T extends DbModel> {
 
 //CRUD Methods
   /// Insert new entry to this table.
-  Future<bool> insertEntry(T entry) async {
+  Future<bool> insertEntry(T entry, {bool isolatedConnection = false}) async {
     try {
       await entry.beforeSave(true);
 
       int result = 0;
-      var con = await _initializeConnection();
+      var con =
+          await _initializeConnection(isolatedConnection: isolatedConnection);
       var map = <String, dynamic>{};
       entry.creationTime.value = DateTime.now();
       entry.modificationTime.value = DateTime.now();
@@ -135,10 +138,12 @@ abstract class DbRepository<T extends DbModel> {
   }
 
   /// Insert a collection of [entries] to this table.
-  Future<void> insertCollection(List<T> entries) async {
+  Future<void> insertCollection(List<T> entries,
+      {bool isolatedConnection = false}) async {
     if (entries.isEmpty) return;
     // try {
-    var con = await _initializeConnection();
+    var con =
+        await _initializeConnection(isolatedConnection: isolatedConnection);
     var model = entries.first;
     var now = DateTime.now();
     for (var e in entries) {
@@ -184,10 +189,12 @@ abstract class DbRepository<T extends DbModel> {
   /// Update a collection of [entries] in this table.
   ///
   /// The considerable identity here is [DbModel.id]
-  Future<void> updateCollectionById(List<T> entries) async {
+  Future<void> updateCollectionById(List<T> entries,
+      {bool isolatedConnection = false}) async {
     if (entries.isEmpty) return;
     try {
-      var con = await _initializeConnection();
+      var con =
+          await _initializeConnection(isolatedConnection: isolatedConnection);
       await con.transaction((con) async {
         for (var entry in entries) {
           await entry.beforeSave(true);
@@ -200,7 +207,7 @@ abstract class DbRepository<T extends DbModel> {
               _updateSqlGenerator(map, '$idColumnName=${entry.id.value}');
           await con.query(sqlStatement, map.values.map((e) => e!).toList());
 
-          await entry.afterSave(true);
+          await entry.afterSave(false);
           _fireChangeListners(EntryChangeType.Modification, entry);
         }
       });
@@ -221,12 +228,13 @@ abstract class DbRepository<T extends DbModel> {
   }
 
   /// Update an entry in this table.
-  Future<bool> updateEntry(T entry) async {
+  Future<bool> updateEntry(T entry, {bool isolatedConnection = false}) async {
     if (entry.id.value == null) return await insertEntry(entry);
 
     try {
       await entry.beforeSave(false);
-      var con = await _initializeConnection();
+      var con =
+          await _initializeConnection(isolatedConnection: isolatedConnection);
       var map = <String, dynamic>{};
       entry.modificationTime.value = DateTime.now();
       _setEntryToMap(entry, map);
@@ -285,11 +293,13 @@ abstract class DbRepository<T extends DbModel> {
       {required DataPageQuery<T> pageQuery,
       ConditionQuery Function(T model)? where,
       List<FieldOrder> Function(T model)? orderBy,
-      List<FieldWithValue> Function(T model)? desiredFields}) async {
+      List<FieldWithValue> Function(T model)? desiredFields,
+      bool isolatedConnection = false}) async {
     int count = await countEntries(where: where);
     return DataPageQueryResult<T>(
         count,
         await select(
+            isolatedConnection: isolatedConnection,
             limit: pageQuery.resultsPerPage,
             offset: (pageQuery.page - 1) * pageQuery.resultsPerPage,
             where: where,
@@ -300,8 +310,11 @@ abstract class DbRepository<T extends DbModel> {
   }
 
   /// Get an entry by its id as key.
-  Future<T?> loadEntryById(int id) async {
-    var result = (await select(where: (m) => m.id.equals(id), limit: 1));
+  Future<T?> loadEntryById(int id, {bool isolatedConnection = false}) async {
+    var result = (await select(
+        isolatedConnection: isolatedConnection,
+        where: (m) => m.id.equals(id),
+        limit: 1));
     return result.isNotEmpty ? result.first : null;
   }
 
@@ -313,11 +326,12 @@ abstract class DbRepository<T extends DbModel> {
   }
 
   /// Delete an entry from this table.
-  Future<int> deleteEntry(T entry) async {
+  Future<int> deleteEntry(T entry, {bool isolatedConnection = false}) async {
     await entry.beforeDelete();
 
     int result = 0;
-    var con = await _initializeConnection();
+    var con =
+        await _initializeConnection(isolatedConnection: isolatedConnection);
     var affectedRows = (await con.query(
             'DELETE FROM $tableName WHERE $idColumnName=${entry.id.value}'))
         .affectedRows;
@@ -330,13 +344,19 @@ abstract class DbRepository<T extends DbModel> {
   }
 
   /// Remove all entries in this table permenantly.
-  Future deleteAllEntries({bool withRelatedItems = true}) async {
-    await delete(withRelatedItems: withRelatedItems);
+  Future deleteAllEntries(
+      {bool withRelatedItems = true, bool isolatedConnection = false}) async {
+    await delete(
+        withRelatedItems: withRelatedItems,
+        isolatedConnection: isolatedConnection);
   }
 
   /// Get a collection of entries from this table using thier ids.
-  Future<List<T>> getEntriesByIds(List<int> ids) async {
-    return await select(where: (r) => r.id.inCollection(ids));
+  Future<List<T>> getEntriesByIds(List<int> ids,
+      {bool isolatedConnection = false}) async {
+    return await select(
+        where: (r) => r.id.inCollection(ids),
+        isolatedConnection: isolatedConnection);
   }
 
   /// Get a random entry from this table.
@@ -375,8 +395,10 @@ abstract class DbRepository<T extends DbModel> {
           {List<FieldOrder> Function(T e)? orderBy,
           int? offset,
           int? limit,
-          List<FieldWithValue> Function(T e)? desiredFields}) async =>
+          List<FieldWithValue> Function(T e)? desiredFields,
+          bool isolatedConnection = false}) async =>
       select(
+          isolatedConnection: isolatedConnection,
           where: where,
           orderBy: orderBy,
           offset: offset,
@@ -389,7 +411,8 @@ abstract class DbRepository<T extends DbModel> {
       List<FieldOrder> Function(T e)? orderBy,
       int? offset,
       int? limit,
-      List<FieldWithValue> Function(T e)? desiredFields}) async {
+      List<FieldWithValue> Function(T e)? desiredFields,
+      bool isolatedConnection = false}) async {
     List<T> result = [];
 
     for (var r in await query(
@@ -412,7 +435,8 @@ abstract class DbRepository<T extends DbModel> {
       int? offset,
       int? limit,
       List<FieldWithValue> Function(T e)? groupBy,
-      List<FieldOrder> Function(T e)? orderBy}) async {
+      List<FieldOrder> Function(T e)? orderBy,
+      bool isolatedConnection = false}) async {
     List<QueryPart> Function(T a, DbModel? b)? quers;
     if (queries != null) {
       quers = (a, b) => queries.call(a).map((e) => e).toList();
@@ -424,7 +448,8 @@ abstract class DbRepository<T extends DbModel> {
         having: having,
         limit: limit,
         groupBy: groupBy,
-        orderBy: orderBy);
+        orderBy: orderBy,
+        isolatedConnection: isolatedConnection);
   }
 
   Future _queryJoin<O extends DbModel>(
@@ -436,7 +461,8 @@ abstract class DbRepository<T extends DbModel> {
       int? offset,
       int? limit,
       List<FieldWithValue> Function(T e)? groupBy,
-      List<FieldOrder> Function(T e)? orderBy}) async {
+      List<FieldOrder> Function(T e)? orderBy,
+      required bool isolatedConnection}) async {
     return _query(
         queries: queries,
         joinCondition: joinCondition,
@@ -446,7 +472,8 @@ abstract class DbRepository<T extends DbModel> {
         offset: offset,
         limit: limit,
         groupBy: groupBy,
-        orderBy: orderBy);
+        orderBy: orderBy,
+        isolatedConnection: isolatedConnection);
   }
 
   /// Apply inner join.
@@ -458,7 +485,8 @@ abstract class DbRepository<T extends DbModel> {
       int offset,
       int limit,
       List<FieldWithValue> Function(T e) groupBy,
-      List<FieldOrder> Function(T e) orderBy) async {
+      List<FieldOrder> Function(T e) orderBy,
+      bool isolatedConnection) async {
     return _queryJoin(
         queries: queries,
         joinCondition: joinCondition,
@@ -468,7 +496,8 @@ abstract class DbRepository<T extends DbModel> {
         offset: offset,
         limit: limit,
         groupBy: groupBy,
-        orderBy: orderBy);
+        orderBy: orderBy,
+        isolatedConnection: isolatedConnection);
   }
 
   /// Apply left join.
@@ -480,7 +509,8 @@ abstract class DbRepository<T extends DbModel> {
       int offset,
       int limit,
       List<FieldWithValue> Function(T e) groupBy,
-      List<FieldOrder> Function(T e) orderBy) async {
+      List<FieldOrder> Function(T e) orderBy,
+      bool isolatedConnection) async {
     return _queryJoin(
         queries: queries,
         joinCondition: joinCondition,
@@ -490,7 +520,8 @@ abstract class DbRepository<T extends DbModel> {
         offset: offset,
         limit: limit,
         groupBy: groupBy,
-        orderBy: orderBy);
+        orderBy: orderBy,
+        isolatedConnection: isolatedConnection);
   }
 
   Future _query<O extends DbModel>(
@@ -503,7 +534,8 @@ abstract class DbRepository<T extends DbModel> {
       int? offset,
       int? limit,
       List<FieldWithValue> Function(T e)? groupBy,
-      List<FieldOrder> Function(T e)? orderBy}) async {
+      List<FieldOrder> Function(T e)? orderBy,
+      required bool isolatedConnection}) async {
     var a = _createInstance();
     var b = otherJoinTable?._createInstance();
     String queryString = '';
@@ -585,7 +617,8 @@ abstract class DbRepository<T extends DbModel> {
 
     if (limit != null) queryString += ' LIMIT $limit';
     if (offset != null) queryString += ' OFFSET $offset';
-    var con = await _initializeConnection();
+    var con =
+        await _initializeConnection(isolatedConnection: isolatedConnection);
     try {
       var results = await con.query(queryString, queryArgs);
 
@@ -603,18 +636,19 @@ abstract class DbRepository<T extends DbModel> {
             queryArgs.toString());
       }
       await closeDB();
-      _connection = await DbHelper._checkDbAndTable(this, forceReconnect: true);
+      _connection = await DbHelper._checkDbAndTable(this,
+          forceReconnect: true, isolatedConnection: isolatedConnection);
       return await _query<O>(
-        queries: queries,
-        otherJoinTable: otherJoinTable,
-        joinCondition: joinCondition,
-        joinType: joinType,
-        where: where,
-        having: having,
-        offset: offset,
-        groupBy: groupBy,
-        orderBy: orderBy,
-      );
+          queries: queries,
+          otherJoinTable: otherJoinTable,
+          joinCondition: joinCondition,
+          joinType: joinType,
+          where: where,
+          having: having,
+          offset: offset,
+          groupBy: groupBy,
+          orderBy: orderBy,
+          isolatedConnection: isolatedConnection);
     }
   }
 
@@ -623,14 +657,19 @@ abstract class DbRepository<T extends DbModel> {
   Future delete({
     bool withRelatedItems = true,
     ConditionQuery Function(T e)? where,
+    bool isolatedConnection = false,
   }) async {
     if (!withRelatedItems) {
       if (where != null) {
-        var ids = (await select(where: where, desiredFields: (s) => [s.id]))
+        var ids = (await select(
+                where: where,
+                desiredFields: (s) => [s.id],
+                isolatedConnection: isolatedConnection))
             .map((e) => e.id.value!);
 
         int result = 0;
-        var con = await _initializeConnection();
+        var con =
+            await _initializeConnection(isolatedConnection: isolatedConnection);
         var affectedRows = (await con.query(
                 'DELETE FROM $tableName WHERE $idColumnName IN ?', [ids]))
             .affectedRows;
@@ -638,14 +677,16 @@ abstract class DbRepository<T extends DbModel> {
         return result;
       } else {
         int result = 0;
-        var con = await _initializeConnection();
+        var con =
+            await _initializeConnection(isolatedConnection: isolatedConnection);
         var affectedRows =
             (await con.query('DELETE FROM $tableName')).affectedRows;
         result = affectedRows != null && affectedRows > 0 ? 1 : 0;
         return result;
       }
     } else {
-      for (var entry in await select(where: where)) {
+      for (var entry in await select(
+          where: where, isolatedConnection: isolatedConnection)) {
         await deleteEntry(entry);
       }
     }
@@ -675,9 +716,14 @@ abstract class DbRepository<T extends DbModel> {
       {ConditionQuery Function(T model)? where,
       List<FieldOrder> Function(T model)? orderBy,
       int? offset,
-      List<FieldWithValue> Function(T model)? desiredFields}) async {
+      List<FieldWithValue> Function(T model)? desiredFields,
+      bool isolatedConnection = false}) async {
     var result = (await select(
-        where: where, orderBy: orderBy, limit: 1, offset: offset));
+        isolatedConnection: isolatedConnection,
+        where: where,
+        orderBy: orderBy,
+        limit: 1,
+        offset: offset));
     return result.isNotEmpty ? result.first : null;
   }
 
@@ -685,9 +731,14 @@ abstract class DbRepository<T extends DbModel> {
   Future<T?> selectFirstWhere(ConditionQuery Function(T model) where,
       {List<FieldOrder> Function(T model)? orderBy,
       int? offset,
-      List<FieldWithValue> Function(T model)? desiredFields}) async {
+      List<FieldWithValue> Function(T model)? desiredFields,
+      bool isolatedConnection = false}) async {
     var result = (await select(
-        where: where, orderBy: orderBy, limit: 1, offset: offset));
+        isolatedConnection: isolatedConnection,
+        where: where,
+        orderBy: orderBy,
+        limit: 1,
+        offset: offset));
     return result.isNotEmpty ? result.first : null;
   }
 

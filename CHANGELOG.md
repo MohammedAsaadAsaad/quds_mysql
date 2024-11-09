@@ -18,3 +18,10 @@
 
 ## 1.0.1+2
 - Added ability to create/drop tables
+
+
+## 1.0.1+3
+- Fixed updateCollectionByIds method.
+
+## 1.0.1+4
+- Add ability to execute queries in isolated connection.
